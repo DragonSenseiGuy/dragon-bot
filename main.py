@@ -20,9 +20,9 @@ async def on_ready():
     print("Slash commands synced!")
 
 @bot.tree.command(name="create-channel", description="Creates a new text channel")
-@app_commands.describe(channel_name="The name of the channel to create", category_id="The ID of the category to create the channel in")
+@app_commands.describe(channel_name="The name of the channel to create", category_id="The ID of the category to create the channel in", description="The description of the channel")
 @commands.has_permissions(manage_channels=True) # Ensure the user has permission
-async def create_text_channel(ctx: discord.Interaction, channel_name: str, category_id: str):
+async def create_text_channel(ctx: discord.Interaction, channel_name: str, category_id: str, description: str):
     """Creates a new text channel in the current guild."""
     try:
         try:
@@ -30,7 +30,7 @@ async def create_text_channel(ctx: discord.Interaction, channel_name: str, categ
         except ValueError:
             await ctx.response.send_message("Category ID must be a valid number.")
             return
-        await ctx.guild.create_text_channel(name=channel_name, category=discord.utils.get(ctx.guild.categories, id=cat_id))
+        await ctx.guild.create_text_channel(name=channel_name, category=discord.utils.get(ctx.guild.categories, id=cat_id), topic=description)
         await ctx.response.send_message(f'Text channel "{channel_name}" created successfully!')
     except discord.Forbidden:
         await ctx.response.send_message("I don't have permission to create channels here.")

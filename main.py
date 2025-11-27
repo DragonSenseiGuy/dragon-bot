@@ -19,6 +19,7 @@ async def on_ready():
     await bot.tree.sync()
     print("Slash commands synced!")
 
+# Channel Commands
 @bot.tree.command(name="create-channel", description="Creates a new text channel")
 @app_commands.describe(channel_name="The name of the channel to create", category_id="The ID of the category to create the channel in", description="The description of the channel")
 @commands.has_permissions(manage_channels=True) # Ensure the user has permission
@@ -59,6 +60,7 @@ async def delete_text_channel(ctx: discord.Interaction, channel_id: str):
     except Exception as e:
         await ctx.response.send_message(f"An error occurred: {e}")
 
+# Sync
 @bot.tree.command(name="sync", description="Syncs the slash commands to Discord.")
 async def sync(ctx: discord.Interaction):
     if ctx.user.id == ctx.guild.owner_id: # Only allow guild owner to sync

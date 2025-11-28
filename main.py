@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 import aiohttp
 from discord import Embed
+from  random import randint
 
 load_dotenv()
 
@@ -63,16 +64,17 @@ async def delete_text_channel(ctx: discord.Interaction, channel_id: str):
         await ctx.response.send_message(f"An error occurred: {e}")
 
 # xkcd
-@bot.tree.command(name="xkcd-fetch", description="Fetches a specific xkcd")
-@app_commands.describe(xkcd_id="The id of the xkcd")
-async def xkcd_fetch(ctx: discord.Interaction, xkcd_id: str):
-    """Fetches a specific xkcd."""
+async def _fetch_and_embed_xkcd(ctx: discord.Interaction, xkcd_id: str):
+    """Helper function to fetch and embed an xkcd comic."""
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(f"https://xkcd.com/{xkcd_id}/info.0.json") as response:
                 if response.status != 200:
                     embed = Embed(title="Error", description=f"Could not retrieve xkcd comic #{xkcd_id}.", colour=0xCD6D6D)
-                    await ctx.response.send_message(embed=embed)
+                    if ctx.response.is_done():
+                        await ctx.followup.send(embed=embed)
+                    else:
+                        await ctx.response.send_message(embed=embed)
                     return
 
                 info = await response.json()
@@ -90,11 +92,45 @@ async def xkcd_fetch(ctx: discord.Interaction, xkcd_id: str):
                 f"Comic can be viewed [here](https://xkcd.com/{info['num']})."
             )
 
-        await ctx.response.send_message(embed=embed)
+        if ctx.response.is_done():
+            await ctx.followup.send(embed=embed)
+        else:
+            await ctx.response.send_message(embed=embed)
 
     except Exception as e:
         embed = Embed(title="Error", description=f"An error occurred: {e}", colour=0xCD6D6D)
-        await ctx.response.send_message(embed=embed)
+        if ctx.response.is_done():
+            await ctx.followup.send(embed=embed)
+        else:
+            await ctx.response.send_message(embed=embed)
+
+@bot.tree.command(name="xkcd-fetch", description="Fetches a specific xkcd")
+@app_commands.describe(xkcd_id="The id of the xkcd")
+async def xkcd_fetch(ctx: discord.Interaction, xkcd_id: str):
+    """Fetches a specific xkcd."""
+    await _fetch_and_embed_xkcd(ctx, xkcd_id)
+
+@bot.tree.command(name="xkcd-random", description="Fetches a random xkcd")
+async def xkcd_random(ctx: discord.Interaction):
+    """Fetches a random xkcd."""
+    await ctx.response.defer()
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://xkcd.com/info.0.json") as response:
+                if response.status != 200:
+                    embed = Embed(title="Error", description="Could not retrieve the latest xkcd comic.", colour=0xCD6D6D)
+                    await ctx.followup.send(embed=embed)
+                    return
+
+                latest_comic_info = await response.json()
+                latest_comic_num = latest_comic_info["num"]
+
+        random_xkcd_id = str(randint(1, latest_comic_num))
+        await _fetch_and_embed_xkcd(ctx, random_xkcd_id)
+
+    except Exception as e:
+        embed = Embed(title="Error", description=f"An error occurred: {e}", colour=0xCD6D6D)
+        await ctx.followup.send(embed=embed)
 
 # Sync
 @bot.tree.command(name="sync", description="Syncs the slash commands to Discord.")

@@ -64,13 +64,14 @@ async def delete_text_channel(ctx: discord.Interaction, channel_id: str):
         await ctx.response.send_message(f"An error occurred: {e}")
 
 # xkcd
-async def _fetch_and_embed_xkcd(ctx: discord.Interaction, xkcd_id: str):
+async def _fetch_and_embed_xkcd(ctx: discord.Interaction, xkcd_id: str = None):
     """Helper function to fetch and embed an xkcd comic."""
+    url = "https://xkcd.com/info.0.json" if xkcd_id is None else f"https://xkcd.com/{xkcd_id}/info.0.json"
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"https://xkcd.com/{xkcd_id}/info.0.json") as response:
+            async with session.get(url) as response:
                 if response.status != 200:
-                    embed = Embed(title="Error", description=f"Could not retrieve xkcd comic #{xkcd_id}.", colour=0xCD6D6D)
+                    embed = Embed(title="Error", description=f"Could not retrieve xkcd comic.", colour=0xCD6D6D)
                     if ctx.response.is_done():
                         await ctx.followup.send(embed=embed)
                     else:
@@ -131,5 +132,11 @@ async def xkcd_random(ctx: discord.Interaction):
     except Exception as e:
         embed = Embed(title="Error", description=f"An error occurred: {e}", colour=0xCD6D6D)
         await ctx.followup.send(embed=embed)
+
+@bot.tree.command(name="xkcd-latest", description="Fetches the latest xkcd")
+async def xkcd_latest(ctx: discord.Interaction):
+    """Fetches the latest xkcd."""
+    await ctx.response.defer()
+    await _fetch_and_embed_xkcd(ctx)
 
 bot.run(BOT_TOKEN)

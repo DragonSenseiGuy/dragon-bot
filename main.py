@@ -132,13 +132,4 @@ async def xkcd_random(ctx: discord.Interaction):
         embed = Embed(title="Error", description=f"An error occurred: {e}", colour=0xCD6D6D)
         await ctx.followup.send(embed=embed)
 
-# Sync
-@bot.tree.command(name="sync", description="Syncs the slash commands to Discord.")
-async def sync(ctx: discord.Interaction):
-    if ctx.user.id == ctx.guild.owner_id: # Only allow guild owner to sync
-        await bot.tree.sync()
-        await ctx.response.send_message("Slash commands synced!")
-    else:
-        await ctx.response.send_message("You must be the guild owner to use this command.")
-
 bot.run(BOT_TOKEN)

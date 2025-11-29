@@ -4,6 +4,7 @@ from discord.ext import commands
 from discord import Embed
 import aiohttp
 from random import randint
+import logging
 
 class Xkcd(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -16,6 +17,7 @@ class Xkcd(commands.Cog):
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     if response.status != 200:
+                        logging.error(f"Failed to fetch XKCD comic. Status code: {response.status}")
                         embed = Embed(title="Error", description=f"Could not retrieve xkcd comic.", colour=0xCD6D6D)
                         if ctx.response.is_done():
                             await ctx.followup.send(embed=embed)
@@ -44,6 +46,7 @@ class Xkcd(commands.Cog):
                 await ctx.response.send_message(embed=embed)
 
         except Exception as e:
+            logging.error(f"An error occurred during XKCD fetch: {e}")
             embed = Embed(title="Error", description=f"An error occurred: {e}", colour=0xCD6D6D)
             if ctx.response.is_done():
                 await ctx.followup.send(embed=embed)
@@ -64,6 +67,7 @@ class Xkcd(commands.Cog):
             async with aiohttp.ClientSession() as session:
                 async with session.get("https://xkcd.com/info.0.json") as response:
                     if response.status != 200:
+                        logging.error(f"Failed to fetch latest XKCD comic. Status code: {response.status}")
                         embed = Embed(title="Error", description="Could not retrieve the latest xkcd comic.", colour=0xCD6D6D)
                         await ctx.followup.send(embed=embed)
                         return
@@ -75,6 +79,7 @@ class Xkcd(commands.Cog):
             await self._fetch_and_embed_xkcd(ctx, random_xkcd_id)
 
         except Exception as e:
+            logging.error(f"An error occurred during random XKCD fetch: {e}")
             embed = Embed(title="Error", description=f"An error occurred: {e}", colour=0xCD6D6D)
             await ctx.followup.send(embed=embed)
 

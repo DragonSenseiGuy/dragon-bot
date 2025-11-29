@@ -2,6 +2,15 @@ import discord
 from discord.ext import commands
 import os
 from dotenv import load_dotenv
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    handlers=[
+                        logging.FileHandler("discord.log"),
+                        logging.StreamHandler()
+                    ])
 
 load_dotenv()
 
@@ -15,19 +24,31 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 @bot.event
 async def on_ready():
     print(f'Bot connected as {bot.user}')
-    await bot.tree.sync()
-    print("Slash commands synced!")
+    try:
+        await bot.tree.sync()
+        print("Slash commands synced!")
+    except Exception as e:
+        logging.error(f"Failed to sync slash commands: {e}")
 
 async def load_cogs():
     for filename in os.listdir('./cogs'):
         if filename.endswith('.py'):
-            await bot.load_extension(f'cogs.{filename[:-3]}')
+            try:
+                await bot.load_extension(f'cogs.{filename[:-3]}')
+            except Exception as e:
+                logging.error(f"Failed to load cog {filename}: {e}")
 
 async def main():
-    async with bot:
-        await load_cogs()
-        await bot.start(BOT_TOKEN)
+    try:
+        async with bot:
+            await load_cogs()
+            await bot.start(BOT_TOKEN)
+    except Exception as e:
+        logging.critical(f"Bot failed to start: {e}")
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        logging.critical(f"Bot crashed: {e}")

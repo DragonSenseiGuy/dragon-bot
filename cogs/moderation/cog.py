@@ -131,7 +131,7 @@ class Moderation(commands.Cog):
         await self.apply_timeout(interaction, user, reason, duration_or_expiry=duration_obj)
 
     @app_commands.command(name="kick", description="Kick's a specific user")
-    @app_commands.describe(user="The user to kick", reason="The reason for the timeout")
+    @app_commands.describe(user="The user to kick", reason="The reason for the kick")
     @commands.has_permissions(kick_members=True)
     async def kick(
             self, interaction: discord.Interaction,
@@ -160,6 +160,79 @@ class Moderation(commands.Cog):
         reply_message = f":white_check_mark: Kicked {user.mention}."
         if not dm_sent:
             reply_message += " (Could not send DM to user)"
+        
+        await interaction.response.send_message(reply_message, ephemeral=True)
+
+    @app_commands.command(name="ban", description="Bans a specific user")
+    @app_commands.describe(user="The user to ban", reason="The reason for the ban")
+    @commands.has_permissions(ban_members=True)
+    async def ban(
+            self, interaction: discord.Interaction,
+            user: discord.Member,
+            reason: Optional[str] = None
+    ) -> None:
+        """Ban a user for the given reason."""
+        if interaction.guild:
+            me = interaction.guild.me
+            if user.top_role >= me.top_role:
+                await interaction.response.send_message(
+                    ":x: I cannot ban this user because their role is higher than or equal to mine.", ephemeral=True)
+                return
+
+        # Send DM to user
+        dm_sent = await self._send_moderation_dm(user, "banned", reason)
+
+        try:
+            await user.ban(reason=reason)
+        except discord.Forbidden:
+            await interaction.response.send_message(":x: I don't have permission to ban this user.", ephemeral=True)
+            return
+        except discord.HTTPException as e:
+            await interaction.response.send_message(f":x: Failed to ban user: {e}", ephemeral=True)
+            return
+
+        reply_message = f":white_check_mark: banned {user.mention}."
+        if not dm_sent:
+            reply_message += " (Could not send DM to user)"
+
+        await interaction.response.send_message(reply_message, ephemeral=True)
+
+    @app_commands.command(name="unban", description="Unbans a specific user")
+    @app_commands.describe(user="The user ID or mention of the user to unban")
+    @commands.has_permissions(ban_members=True)
+    async def unban(
+            self, interaction: discord.Interaction,
+            user: str
+    ) -> None:
+        """Unban a user by their ID."""
+        try:
+            # Try to convert to int, or strip mention characters
+            if user.startswith('<@') and user.endswith('>'):
+                user_id = int(user[2:-1])
+            else:
+                user_id = int(user)
+            
+            user_obj = await self.bot.fetch_user(user_id)
+        except (ValueError, TypeError):
+            await interaction.response.send_message(":x: Please provide a valid user ID or mention.", ephemeral=True)
+            return
+        except discord.NotFound:
+            await interaction.response.send_message(":x: User not found.", ephemeral=True)
+            return
+        except discord.HTTPException as e:
+            await interaction.response.send_message(f":x: Failed to fetch user: {e}", ephemeral=True)
+            return
+        
+        try:
+            await interaction.guild.unban(user_obj)
+        except discord.Forbidden:
+            await interaction.response.send_message(":x: I don't have permission to unban this user.", ephemeral=True)
+            return
+        except discord.HTTPException as e:
+            await interaction.response.send_message(f":x: Failed to unban user: {e}", ephemeral=True)
+            return
+        
+        reply_message = f":white_check_mark: Unbanned {user_obj.mention}."
         
         await interaction.response.send_message(reply_message, ephemeral=True)
 

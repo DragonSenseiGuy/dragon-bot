@@ -16,6 +16,27 @@ class Moderation(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    async def _send_moderation_dm(self, user: discord.Member, action: str, reason: Optional[str]) -> bool:
+        """Sends a DM to a user about their moderation action."""
+        try:
+            dm_channel = await user.create_dm()
+            embed = discord.Embed(
+                title=f"You have been {action}",
+                description=f"You have been {action} from the server.",
+                color=discord.Color.red()
+            )
+            if reason:
+                embed.add_field(name="Reason", value=reason, inline=False)
+            await dm_channel.send(embed=embed)
+            return True
+        except discord.Forbidden:
+            # This can happen if the user has DMs disabled or has blocked the bot.
+            logging.warning(f"Failed to send {action} DM to {user.mention}. They may have DMs disabled.")
+            return False
+        except discord.HTTPException as e:
+            logging.error(f"Failed to send {action} DM to {user.mention}: {e}")
+            return False
+
     async def apply_timeout(self, ctx, user, reason, duration_or_expiry):
         # Determine how to reply based on context type
         if isinstance(ctx, discord.Interaction):
@@ -108,6 +129,39 @@ class Moderation(commands.Cog):
                 await _utils.notify_timeout_cap(self.bot, interaction, user)
 
         await self.apply_timeout(interaction, user, reason, duration_or_expiry=duration_obj)
+
+    @app_commands.command(name="kick", description="Kick's a specific user")
+    @app_commands.describe(user="The user to kick", reason="The reason for the timeout")
+    @commands.has_permissions(kick_members=True)
+    async def kick(
+            self, interaction: discord.Interaction,
+            user: discord.Member,
+            reason: Optional[str] = None
+    ) -> None:
+        """Kick a user for the given reason."""
+        if interaction.guild:
+            me = interaction.guild.me
+            if user.top_role >= me.top_role:
+                await interaction.response.send_message(":x: I cannot kick this user because their role is higher than or equal to mine.", ephemeral=True)
+                return
+
+        # Send DM to user
+        dm_sent = await self._send_moderation_dm(user, "kicked", reason)
+
+        try:
+            await user.kick(reason=reason)
+        except discord.Forbidden:
+            await interaction.response.send_message(":x: I don't have permission to kick this user.", ephemeral=True)
+            return
+        except discord.HTTPException as e:
+            await interaction.response.send_message(f":x: Failed to kick user: {e}", ephemeral=True)
+            return
+
+        reply_message = f":white_check_mark: Kicked {user.mention}."
+        if not dm_sent:
+            reply_message += " (Could not send DM to user)"
+        
+        await interaction.response.send_message(reply_message, ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Moderation(bot))

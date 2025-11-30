@@ -8,7 +8,7 @@ DESCRIPTIONS = (
     "Discord API latency"
 )
 
-class Ping(commands.Cog):
+class Miscellaneous(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -30,5 +30,18 @@ class Ping(commands.Cog):
 
         await interaction.response.send_message(embed=embed)
 
+    @app_commands.command(name="about", description="Info about the bot.")
+    async def about(self, interaction: discord.Interaction) -> None:
+        """Info about the bot."""
+        GITHUB_URL = "https://github.com/dragonsenseiguy/dragon-bot"
+        CREATOR_DISCORD = "<@1374119550467051542>(dragonsenseiguy)"
+
+        embed = Embed(title="Dragon Bot", color=discord.Color.blue())
+        embed.add_field(name="GitHub", value=f"[Repository]({GITHUB_URL})", inline=False)
+        embed.add_field(name="Creator", value=CREATOR_DISCORD, inline=False)
+        embed.set_footer(text=f"Bot ID: {self.bot.user.id}")
+
+        await interaction.response.send_message(embed=embed)
+
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Ping(bot))
+    await bot.add_cog(Miscellaneous(bot))

@@ -5,9 +5,7 @@ from discord.ext.commands import MemberConverter, UserConverter, Converter, BadA
 from datetime import datetime, UTC, timedelta
 from dateutil.relativedelta import relativedelta
 import dateutil.parser
-import arrow
 from . import time
-from typing import Union
 
 # The user did not provide the following constants. I will use placeholders.
 AMBIGUOUS_ARGUMENT_MSG = "Could not resolve '{argument}' to a user. Please use a mention or a user ID."

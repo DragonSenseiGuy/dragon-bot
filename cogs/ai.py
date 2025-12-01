@@ -8,6 +8,7 @@ import io
 import discord
 import logging
 
+
 load_dotenv()
 
 AI_API_KEY = os.getenv('AI_API_KEY')
@@ -81,6 +82,51 @@ class AI(commands.Cog):
         # Log a summary of the API response when no image is found, avoiding large data.
         self.logger.error("API returned no image for prompt '%s'. Full response summary: %s", prompt, {'status_code': response.status_code, 'response_keys': list(result.keys()), 'choices_present': 'choices' in result})
         await ctx.followup.send("I couldn't generate an image. The API returned no image.")
+
+    @app_commands.command(name="ask-ai", description="Ask AI a question.")
+    @app_commands.describe(prompt="The prompt.")
+    async def ask_ai(self, ctx: commands.Context, prompt: str) -> None:
+        """Ask AI a question."""
+        await ctx.response.defer()
+
+        headers = {
+            "Authorization": f"Bearer {AI_API_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "model": "google/gemini-2.5-flash",
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "stream": False
+        }
+
+        try:
+            response = await self.bot.loop.run_in_executor(
+                None,
+                lambda: requests.post(URL, headers=headers, json=payload)
+            )
+            response.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
+            result = response.json()
+            self.logger.info("API response for prompt '%s'. Contains choices: %s", prompt, 'choices' in result)
+
+
+            if result.get("choices") and result["choices"][0]["message"].get("content"):
+                content = result["choices"][0]["message"]["content"]
+                await ctx.followup.send(content)
+                self.logger.info("Successfully sent AI response for prompt: '%s'", prompt)
+            else:
+                self.logger.error("API returned no content for prompt '%s'. Full response summary: %s", prompt, {'status_code': response.status_code, 'response_keys': list(result.keys()), 'choices_present': 'choices' in result})
+                await ctx.followup.send("I couldn't get a response from the AI.")
+
+        except requests.exceptions.RequestException as e:
+            self.logger.error("Request to AI API failed for prompt '%s': %s", prompt, e)
+            await ctx.followup.send(f"Failed to communicate with the AI API: {e}")
+        except Exception as e:
+            self.logger.error("An unexpected error occurred in ask_ai for prompt '%s': %s", prompt, e)
+            await ctx.followup.send("An unexpected error occurred while asking the AI.")
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AI(bot))

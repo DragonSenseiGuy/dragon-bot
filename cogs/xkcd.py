@@ -6,19 +6,32 @@ import aiohttp
 from random import randint
 import logging
 
+
 class Xkcd(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    async def _fetch_and_embed_xkcd(self, ctx: discord.Interaction, xkcd_id: str = None):
+    async def _fetch_and_embed_xkcd(
+        self, ctx: discord.Interaction, xkcd_id: str = None
+    ):
         """Helper function to fetch and embed an xkcd comic."""
-        url = "https://xkcd.com/info.0.json" if xkcd_id is None else f"https://xkcd.com/{xkcd_id}/info.0.json"
+        url = (
+            "https://xkcd.com/info.0.json"
+            if xkcd_id is None
+            else f"https://xkcd.com/{xkcd_id}/info.0.json"
+        )
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     if response.status != 200:
-                        logging.error(f"Failed to fetch XKCD comic. Status code: {response.status}")
-                        embed = Embed(title="Error", description=f"Could not retrieve xkcd comic.", colour=0xCD6D6D)
+                        logging.error(
+                            f"Failed to fetch XKCD comic. Status code: {response.status}"
+                        )
+                        embed = Embed(
+                            title="Error",
+                            description="Could not retrieve xkcd comic.",
+                            colour=0xCD6D6D,
+                        )
                         if ctx.response.is_done():
                             await ctx.followup.send(embed=embed)
                         else:
@@ -27,7 +40,11 @@ class Xkcd(commands.Cog):
 
                     info = await response.json()
 
-            embed = Embed(title=f"XKCD comic #{info['num']}", url=f"https://xkcd.com/{info['num']}", colour=0x68C290)
+            embed = Embed(
+                title=f"XKCD comic #{info['num']}",
+                url=f"https://xkcd.com/{info['num']}",
+                colour=0x68C290,
+            )
             embed.description = info["alt"]
             date = f"{info['year']}/{info['month']}/{info['day']}"
             embed.set_footer(text=f"{date} - #{info['num']}, '{info['safe_title']}'")
@@ -47,7 +64,9 @@ class Xkcd(commands.Cog):
 
         except Exception as e:
             logging.error(f"An error occurred during XKCD fetch: {e}")
-            embed = Embed(title="Error", description=f"An error occurred: {e}", colour=0xCD6D6D)
+            embed = Embed(
+                title="Error", description=f"An error occurred: {e}", colour=0xCD6D6D
+            )
             if ctx.response.is_done():
                 await ctx.followup.send(embed=embed)
             else:
@@ -67,8 +86,14 @@ class Xkcd(commands.Cog):
             async with aiohttp.ClientSession() as session:
                 async with session.get("https://xkcd.com/info.0.json") as response:
                     if response.status != 200:
-                        logging.error(f"Failed to fetch latest XKCD comic. Status code: {response.status}")
-                        embed = Embed(title="Error", description="Could not retrieve the latest xkcd comic.", colour=0xCD6D6D)
+                        logging.error(
+                            f"Failed to fetch latest XKCD comic. Status code: {response.status}"
+                        )
+                        embed = Embed(
+                            title="Error",
+                            description="Could not retrieve the latest xkcd comic.",
+                            colour=0xCD6D6D,
+                        )
                         await ctx.followup.send(embed=embed)
                         return
 
@@ -80,7 +105,9 @@ class Xkcd(commands.Cog):
 
         except Exception as e:
             logging.error(f"An error occurred during random XKCD fetch: {e}")
-            embed = Embed(title="Error", description=f"An error occurred: {e}", colour=0xCD6D6D)
+            embed = Embed(
+                title="Error", description=f"An error occurred: {e}", colour=0xCD6D6D
+            )
             await ctx.followup.send(embed=embed)
 
     @app_commands.command(name="xkcd-latest", description="Fetches the latest xkcd")

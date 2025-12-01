@@ -3,10 +3,8 @@ from discord import app_commands, Embed
 from discord.ext import commands
 import arrow
 
-DESCRIPTIONS = (
-    "Command processing time",
-    "Discord API latency"
-)
+DESCRIPTIONS = ("Command processing time", "Discord API latency")
+
 
 class Miscellaneous(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -37,11 +35,14 @@ class Miscellaneous(commands.Cog):
         CREATOR_DISCORD = "<@1374119550467051542>(dragonsenseiguy)"
 
         embed = Embed(title="Dragon Bot", color=discord.Color.blue())
-        embed.add_field(name="GitHub", value=f"[Repository]({GITHUB_URL})", inline=False)
+        embed.add_field(
+            name="GitHub", value=f"[Repository]({GITHUB_URL})", inline=False
+        )
         embed.add_field(name="Creator", value=CREATOR_DISCORD, inline=False)
         embed.set_footer(text=f"Bot ID: {self.bot.user.id}")
 
         await interaction.response.send_message(embed=embed)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Miscellaneous(bot))

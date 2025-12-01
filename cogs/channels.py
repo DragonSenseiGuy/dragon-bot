@@ -3,14 +3,27 @@ from discord import app_commands
 from discord.ext import commands
 import logging
 
+
 class Channels(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="create-channel", description="Creates a new text channel")
-    @app_commands.describe(channel_name="The name of the channel to create", category_id="The ID of the category to create the channel in", description="The description of the channel")
+    @app_commands.command(
+        name="create-channel", description="Creates a new text channel"
+    )
+    @app_commands.describe(
+        channel_name="The name of the channel to create",
+        category_id="The ID of the category to create the channel in",
+        description="The description of the channel",
+    )
     @commands.has_permissions(manage_channels=True)
-    async def create_text_channel(self, ctx: discord.Interaction, channel_name: str, category_id: str, description: str):
+    async def create_text_channel(
+        self,
+        ctx: discord.Interaction,
+        channel_name: str,
+        category_id: str,
+        description: str,
+    ):
         """Creates a new text channel in the current guild."""
         try:
             try:
@@ -19,11 +32,19 @@ class Channels(commands.Cog):
                 logging.error("Invalid category ID provided.")
                 await ctx.response.send_message("Category ID must be a valid number.")
                 return
-            await ctx.guild.create_text_channel(name=channel_name, category=discord.utils.get(ctx.guild.categories, id=cat_id), topic=description)
-            await ctx.response.send_message(f'Text channel "{channel_name}" created successfully!')
+            await ctx.guild.create_text_channel(
+                name=channel_name,
+                category=discord.utils.get(ctx.guild.categories, id=cat_id),
+                topic=description,
+            )
+            await ctx.response.send_message(
+                f'Text channel "{channel_name}" created successfully!'
+            )
         except discord.Forbidden:
             logging.error("Missing permissions to create a channel.")
-            await ctx.response.send_message("I don't have permission to create channels here.")
+            await ctx.response.send_message(
+                "I don't have permission to create channels here."
+            )
         except Exception as e:
             logging.error(f"An error occurred during channel creation: {e}")
             await ctx.response.send_message(f"An error occurred: {e}")
@@ -43,15 +64,22 @@ class Channels(commands.Cog):
             channel = discord.utils.get(ctx.guild.channels, id=chan_id)
             if channel:
                 await channel.delete()
-                await ctx.response.send_message(f'Text channel "{channel.name}" deleted successfully!')
+                await ctx.response.send_message(
+                    f'Text channel "{channel.name}" deleted successfully!'
+                )
             else:
-                await ctx.response.send_message(f'Channel with ID "{channel_id}" not found.')
+                await ctx.response.send_message(
+                    f'Channel with ID "{channel_id}" not found.'
+                )
         except discord.Forbidden:
             logging.error("Missing permissions to delete a channel.")
-            await ctx.response.send_message("I don't have permission to delete channels here.")
+            await ctx.response.send_message(
+                "I don't have permission to delete channels here."
+            )
         except Exception as e:
             logging.error(f"An error occurred during channel deletion: {e}")
             await ctx.response.send_message(f"An error occurred: {e}")
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Channels(bot))

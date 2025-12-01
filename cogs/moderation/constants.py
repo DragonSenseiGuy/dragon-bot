@@ -8,9 +8,12 @@ import dateutil.parser
 from . import time
 
 # The user did not provide the following constants. I will use placeholders.
-AMBIGUOUS_ARGUMENT_MSG = "Could not resolve '{argument}' to a user. Please use a mention or a user ID."
+AMBIGUOUS_ARGUMENT_MSG = (
+    "Could not resolve '{argument}' to a user. Please use a mention or a user ID."
+)
 MAXIMUM_TIMEOUT_DAYS = timedelta(days=28)
 TIMEOUT_CAP_MESSAGE = "The timeout duration for {0} was capped to 28 days."
+
 
 def _is_an_unambiguous_user_argument(argument: str) -> bool:
     """Check if an argument is a mention or a user ID."""
@@ -45,8 +48,6 @@ class UnambiguousUser(UserConverter):
         if _is_an_unambiguous_user_argument(argument):
             return await super().convert(ctx, argument)
         raise BadArgument(AMBIGUOUS_ARGUMENT_MSG.format(argument=argument))
-
-
 
 
 class DurationDelta(Converter):
@@ -106,7 +107,9 @@ class ISODateTime(Converter):
         try:
             dt = dateutil.parser.isoparse(datetime_string)
         except ValueError:
-            raise BadArgument(f"`{datetime_string}` is not a valid ISO-8601 datetime string")
+            raise BadArgument(
+                f"`{datetime_string}` is not a valid ISO-8601 datetime string"
+            )
 
         if dt.tzinfo:
             dt = dt.astimezone(UTC)
@@ -131,4 +134,6 @@ class Duration(DurationDelta):
         try:
             return now + delta
         except (ValueError, OverflowError):
-            raise BadArgument(f"`{duration}` results in a datetime outside the supported range.")
+            raise BadArgument(
+                f"`{duration}` results in a datetime outside the supported range."
+            )

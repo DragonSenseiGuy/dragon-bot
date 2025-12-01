@@ -1,6 +1,7 @@
 # cogs/moderation/time.py
 from dateutil.relativedelta import relativedelta
 
+
 def parse_duration_string(duration: str) -> relativedelta | None:
     """
     Parses a duration string and returns a relativedelta object.

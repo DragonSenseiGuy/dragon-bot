@@ -24,7 +24,7 @@ To run Dragon Bot on your own machine for development purposes, follow these ste
 
 3.  **Install dependencies**:
     ```bash
-    pip install -r requirements.txt
+    uv sync
     ```
 
 4.  **Create a `.env` file**:
@@ -35,7 +35,7 @@ To run Dragon Bot on your own machine for development purposes, follow these ste
 
 5.  **Run the bot**:
     ```bash
-    python3 main.py
+    uv run main.py
     ```
 
 ## Contributing

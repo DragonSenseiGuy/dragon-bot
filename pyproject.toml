@@ -1,0 +1,18 @@
+[project]
+name = "dragon-bot"
+version = "0.1"
+description = "Dragon Bot is a Discord bot designed to help manage my server and provide some fun and useful commands. "
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "arrow>=1.4.0",
+    "discord-py>=2.6.4",
+    "openrouter>=0.0.19",
+    "pyjokes>=0.8.3",
+    "python-dateutil>=2.9.0.post0",
+    "python-dotenv>=1.2.1",
+    "requests>=2.32.5",
+]
+
+[tool.ruff]
+extend-select = ["I"]

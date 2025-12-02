@@ -1,6 +1,0 @@
-discord.py
-python-dotenv
-python-dateutil
-arrow
-pyjokes
-openrouter

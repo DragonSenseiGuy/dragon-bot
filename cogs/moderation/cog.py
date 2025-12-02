@@ -124,10 +124,7 @@ class Moderation(commands.Cog):
             return
 
         duration_obj = None
-        if duration is None:
-            # Default to 1 hour
-            duration_obj = await Duration().convert(None, "1h")
-        else:
+        if duration:
             # Try parsing as ISO datetime first
             try:
                 duration_obj = dateutil.parser.isoparse(duration)
@@ -311,8 +308,22 @@ class Moderation(commands.Cog):
         reason: Optional[str] = None,
     ) -> None:
         """
-        Temporarily forces a random superstar name to be the user's nickname.
-        (Adapted from Python Discord's command)
+        Temporarily force a random superstar name (like Taylor Swift) to be the user's nickname.
+
+        A unit of time should be appended to the duration.
+        Units (∗case-sensitive):
+        \u2003`y` - years
+        \u2003`m` - months∗
+        \u2003`w` - weeks
+        \u2003`d` - days
+        \u2003`h` - hours
+        \u2003`M` - minutes∗
+        \u2003`s` - seconds
+
+        Alternatively, an ISO 8601 timestamp can be provided for the duration.
+
+        An optional reason can be provided, which would be added to a message stating their old nickname
+        and linking to the nickname policy.
         """
         await interaction.response.defer(ephemeral=True)
 
@@ -322,26 +333,22 @@ class Moderation(commands.Cog):
             )
             return
 
-        # Duration parsing logic from 'timeout' command
         duration_obj = None
-        if duration is None:
-            duration = SUPERSTARIFY_DEFAULT_DURATION
+        if duration:
+            delta = time.parse_duration_string(duration)
+            if delta is None:
+                await interaction.followup.send(
+                    f"Could not parse `{duration}`. Please use a valid duration string (e.g., 1h, 30m)."
+                )
+                return
 
-        delta = time.parse_duration_string(duration)
-        if delta:
-            now = datetime.now(UTC)
             try:
-                duration_obj = now + delta
+                duration_obj = datetime.now(UTC) + delta
             except (ValueError, OverflowError):
                 await interaction.followup.send(
                     f"`{duration}` results in a datetime outside the supported range."
                 )
                 return
-        else:
-            await interaction.followup.send(
-                f"`{duration}` is not a valid duration string."
-            )
-            return
 
         # In a real implementation, we would store the superstarification expiry.
         # For now, we just change the nick and inform about the duration.
@@ -361,12 +368,17 @@ class Moderation(commands.Cog):
             return
 
         # Prepare DM message
-        expiry_str = f"<t:{int(duration_obj.timestamp())}:R>"
+        expiry_str = ""
+        expiry_dm_part = "This change is permanent."
+        if duration_obj:
+            expiry_str = f" until <t:{int(duration_obj.timestamp())}:R>"
+            expiry_dm_part = f"You will be unable to change your nickname until **<t:{int(duration_obj.timestamp())}:R>**."
+
         user_message = (
             f"Your previous nickname, **{escape_markdown(old_nick)}**, was so fabulous "
             f"that we have decided to give you a superstar name. "
             f"Your new nickname will be **{escape_markdown(forced_nick)}**.\n\n"
-            f"You will be unable to change your nickname until **{expiry_str}**. "
+            f"{expiry_dm_part} "
             "If you're confused by this, please read our "
             f"official nickname policy."
         )
@@ -388,7 +400,7 @@ class Moderation(commands.Cog):
             color=discord.Color.orange(),
             description=(
                 f"{member.mention} has been superstarified! "
-                f"Their new name is **{escape_markdown(forced_nick)}** until {expiry_str}."
+                f"Their new name is **{escape_markdown(forced_nick)}**{expiry_str}."
             ),
         )
         await interaction.followup.send(embed=embed)

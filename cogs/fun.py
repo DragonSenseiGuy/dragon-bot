@@ -50,9 +50,9 @@ class Fun(commands.Cog):
     )
     @app_commands.describe(subcommands="Random or daily")
     async def quote(
-            self,
-            ctx: commands.Context,
-            subcommands: Literal["daily", "random"],
+        self,
+        ctx: commands.Context,
+        subcommands: Literal["daily", "random"],
     ) -> None:
         """Retrieves a quote from the zenquotes.io api."""
         if subcommands == "daily":
@@ -66,18 +66,24 @@ class Fun(commands.Cog):
                 embed = Embed(
                     title="Daily Quote",
                     description=f"> {quote}\n\n-# Powered by [zenquotes.io](https://zenquotes.io)",
-                    colour=0x0279FD
+                    colour=0x0279FD,
                 )
                 await ctx.response.send_message(embed=embed)
             except ClientResponseError as e:
                 logging.warning(f"ZenQuotes API error: {e.status} {e.message}")
-                await ctx.response.send_message(":x: Could not retrieve quote from API.")
+                await ctx.response.send_message(
+                    ":x: Could not retrieve quote from API."
+                )
             except (ClientError, TimeoutError) as e:
                 logging.error(f"Network error fetching quote: {e}")
-                await ctx.response.send_message(":x: Could not connect to the quote service.")
+                await ctx.response.send_message(
+                    ":x: Could not connect to the quote service."
+                )
             except Exception:
                 logging.exception("Unexpected error fetching quote.")
-                await ctx.response.send_message(":x: Something unexpected happened. Try again later.")
+                await ctx.response.send_message(
+                    ":x: Something unexpected happened. Try again later."
+                )
         if subcommands == "random":
             try:
                 async with aiohttp.ClientSession() as session:
@@ -89,18 +95,25 @@ class Fun(commands.Cog):
                 embed = Embed(
                     title="Random Quote",
                     description=f"> {quote}\n\n-# Powered by [zenquotes.io](https://zenquotes.io)",
-                    colour=0x0279FD
+                    colour=0x0279FD,
                 )
                 await ctx.response.send_message(embed=embed)
             except ClientResponseError as e:
                 logging.warning(f"ZenQuotes API error: {e.status} {e.message}")
-                await ctx.response.send_message(":x: Could not retrieve quote from API.")
+                await ctx.response.send_message(
+                    ":x: Could not retrieve quote from API."
+                )
             except (ClientError, TimeoutError) as e:
                 logging.error(f"Network error fetching quote: {e}")
-                await ctx.response.send_message(":x: Could not connect to the quote service.")
+                await ctx.response.send_message(
+                    ":x: Could not connect to the quote service."
+                )
             except Exception:
                 logging.exception("Unexpected error fetching quote.")
-                await ctx.response.send_message(":x: Something unexpected happened. Try again later.")
+                await ctx.response.send_message(
+                    ":x: Something unexpected happened. Try again later."
+                )
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Fun(bot))

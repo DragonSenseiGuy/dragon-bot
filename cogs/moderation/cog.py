@@ -4,7 +4,6 @@ from discord.ext import commands
 import logging
 from discord import Member
 from typing import Optional
-from .constants import Duration
 from . import time
 from . import _utils
 import dateutil.parser

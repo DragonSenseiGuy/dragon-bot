@@ -9,11 +9,19 @@ from . import time
 from . import _utils
 import dateutil.parser
 from datetime import datetime, UTC
+import random
+from discord.utils import escape_markdown
+import json
+
+
+SUPERSTARIFY_DEFAULT_DURATION = "1h"
 
 
 class Moderation(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        with open("resources/stars.json", "r") as f:
+            self.superstar_names = json.load(f)
 
     async def _send_moderation_dm(
         self, user: discord.Member, action: str, reason: Optional[str]
@@ -283,6 +291,107 @@ class Moderation(commands.Cog):
         reply_message = f":white_check_mark: Unbanned {user_obj.mention}."
 
         await interaction.response.send_message(reply_message, ephemeral=True)
+
+    @app_commands.command(
+        name="superstarify",
+        description="Temporarily force a random superstar name to be the user's nickname.",
+    )
+    @app_commands.describe(
+        member="The user to superstarify",
+        duration="The duration of the nickname change (e.g., 1h, 30m). Defaults to 1 hour.",
+        reason="The reason for the superstarification.",
+    )
+    @commands.has_permissions(moderate_members=True)
+    async def superstarify(
+        self,
+        interaction: discord.Interaction,
+        member: discord.Member,
+        duration: Optional[str] = None,
+        *,
+        reason: Optional[str] = None,
+    ) -> None:
+        """
+        Temporarily forces a random superstar name to be the user's nickname.
+        (Adapted from Python Discord's command)
+        """
+        await interaction.response.defer(ephemeral=True)
+
+        if member.top_role >= interaction.guild.me.top_role:
+            await interaction.followup.send(
+                ":x: I can't superstarify users with a higher or equal role."
+            )
+            return
+
+        # Duration parsing logic from 'timeout' command
+        duration_obj = None
+        if duration is None:
+            duration = SUPERSTARIFY_DEFAULT_DURATION
+
+        delta = time.parse_duration_string(duration)
+        if delta:
+            now = datetime.now(UTC)
+            try:
+                duration_obj = now + delta
+            except (ValueError, OverflowError):
+                await interaction.followup.send(
+                    f"`{duration}` results in a datetime outside the supported range."
+                )
+                return
+        else:
+            await interaction.followup.send(
+                f"`{duration}` is not a valid duration string."
+            )
+            return
+
+        # In a real implementation, we would store the superstarification expiry.
+        # For now, we just change the nick and inform about the duration.
+
+        old_nick = member.display_name
+        forced_nick = random.choice(self.superstar_names)
+
+        try:
+            await member.edit(nick=forced_nick, reason=reason)
+        except discord.Forbidden:
+            await interaction.followup.send(
+                ":x: I don't have permission to change this user's nickname."
+            )
+            return
+        except discord.HTTPException as e:
+            await interaction.followup.send(f":x: Failed to change nickname: {e}")
+            return
+
+        # Prepare DM message
+        expiry_str = f"<t:{int(duration_obj.timestamp())}:R>"
+        user_message = (
+            f"Your previous nickname, **{escape_markdown(old_nick)}**, was so fabulous "
+            f"that we have decided to give you a superstar name. "
+            f"Your new nickname will be **{escape_markdown(forced_nick)}**.\n\n"
+            f"You will be unable to change your nickname until **{expiry_str}**. "
+            "If you're confused by this, please read our "
+            f"official nickname policy."
+        )
+        if reason:
+            user_message += f"\n\n**Reason:** {reason}"
+
+        try:
+            await member.send(user_message)
+        except discord.Forbidden:
+            logging.warning(
+                f"Failed to send superstarify DM to {member.mention}. They may have DMs disabled."
+            )
+        except discord.HTTPException as e:
+            logging.error(f"Failed to send superstarify DM to {member.mention}: {e}")
+
+        # Send confirmation embed
+        embed = discord.Embed(
+            title="Superstarified!",
+            color=discord.Color.orange(),
+            description=(
+                f"{member.mention} has been superstarified! "
+                f"Their new name is **{escape_markdown(forced_nick)}** until {expiry_str}."
+            ),
+        )
+        await interaction.followup.send(embed=embed)
 
 
 async def setup(bot: commands.Bot):

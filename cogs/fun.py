@@ -5,6 +5,10 @@ import pyjokes
 import random
 from json import loads
 from pathlib import Path
+import aiohttp
+from aiohttp import ClientError, ClientResponseError
+from discord import Embed
+import logging
 
 ALL_VIDS = loads(Path("resources/fun/april_fools_vids.json").read_text("utf-8"))
 
@@ -40,6 +44,63 @@ class Fun(commands.Cog):
             f"Check out this April Fools' video by {channel}.\n\n{url}"
         )
 
+    @app_commands.command(
+        name="quote",
+        description="Retrieves a quote from the zenquotes.io api.",
+    )
+    @app_commands.describe(subcommands="Random or daily")
+    async def quote(
+            self,
+            ctx: commands.Context,
+            subcommands: Literal["daily", "random"],
+    ) -> None:
+        """Retrieves a quote from the zenquotes.io api."""
+        if subcommands == "daily":
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get("https://zenquotes.io/api/today") as resp:
+                        resp.raise_for_status()
+                        data = await resp.json()
+                        quote = f"{data[0]['q']}\n*— {data[0]['a']}*"
+
+                embed = Embed(
+                    title="Daily Quote",
+                    description=f"> {quote}\n\n-# Powered by [zenquotes.io](https://zenquotes.io)",
+                    colour=0x0279FD
+                )
+                await ctx.response.send_message(embed=embed)
+            except ClientResponseError as e:
+                logging.warning(f"ZenQuotes API error: {e.status} {e.message}")
+                await ctx.response.send_message(":x: Could not retrieve quote from API.")
+            except (ClientError, TimeoutError) as e:
+                logging.error(f"Network error fetching quote: {e}")
+                await ctx.response.send_message(":x: Could not connect to the quote service.")
+            except Exception:
+                logging.exception("Unexpected error fetching quote.")
+                await ctx.response.send_message(":x: Something unexpected happened. Try again later.")
+        if subcommands == "random":
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get("https://zenquotes.io/api/random") as resp:
+                        resp.raise_for_status()
+                        data = await resp.json()
+                        quote = f"{data[0]['q']}\n*— {data[0]['a']}*"
+
+                embed = Embed(
+                    title="Random Quote",
+                    description=f"> {quote}\n\n-# Powered by [zenquotes.io](https://zenquotes.io)",
+                    colour=0x0279FD
+                )
+                await ctx.response.send_message(embed=embed)
+            except ClientResponseError as e:
+                logging.warning(f"ZenQuotes API error: {e.status} {e.message}")
+                await ctx.response.send_message(":x: Could not retrieve quote from API.")
+            except (ClientError, TimeoutError) as e:
+                logging.error(f"Network error fetching quote: {e}")
+                await ctx.response.send_message(":x: Could not connect to the quote service.")
+            except Exception:
+                logging.exception("Unexpected error fetching quote.")
+                await ctx.response.send_message(":x: Something unexpected happened. Try again later.")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Fun(bot))

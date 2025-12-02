@@ -12,6 +12,16 @@ import logging
 
 ALL_VIDS = loads(Path("resources/fun/april_fools_vids.json").read_text("utf-8"))
 
+PENGUIN_IGNORED_CHANNELS = [
+    1406104900105932860,
+    1406104898843574370,
+    1406106827342479442,
+    1406104898843574371,
+    1406107819832381632,
+    1406108481781498008,
+    1444870658637959320,
+]
+
 
 class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -113,6 +123,40 @@ class Fun(commands.Cog):
                 await ctx.response.send_message(
                     ":x: Something unexpected happened. Try again later."
                 )
+
+    @app_commands.command(
+        name="penguin-hide-and-seek",
+        description="Bot pops up in a random channel until someone marks that they spotted it.",
+    )
+    @app_commands.describe()
+    async def penguin_hide_and_seek(
+        self,
+        ctx: commands.Context,
+    ) -> None:
+        """Bot pops up in a random channel until someone marks that they spotted it."""
+        if not ctx.guild:
+            await ctx.response.send_message("This command can only be used in a guild.")
+            return
+
+        public_text_channels = []
+        for channel in ctx.guild.text_channels:
+            if channel.id in PENGUIN_IGNORED_CHANNELS:
+                continue
+            if channel.permissions_for(ctx.guild.default_role).read_messages:
+                public_text_channels.append(channel)
+
+        if not public_text_channels:
+            return await ctx.response.send_message(
+                "No public text channels found in this guild where I can send the message."
+            )
+
+        random_channel = random.choice(public_text_channels)
+        await random_channel.send(
+            f"Hello from a random channel! This is {random_channel.mention}"
+        )
+        await ctx.response.send_message(
+            f"I sent a message to {random_channel.mention}."
+        )
 
 
 async def setup(bot: commands.Bot):

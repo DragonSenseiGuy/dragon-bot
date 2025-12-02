@@ -18,6 +18,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 # Initialize your bot with appropriate intents
 intents = discord.Intents.default()
 intents.message_content = True  # Required to read message content for commands
+intents.guilds = True  # Required for accessing guild information
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 

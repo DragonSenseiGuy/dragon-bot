@@ -1,10 +1,10 @@
-import discord
-from discord import app_commands
-from discord.ext import commands
-from discord import Embed
-import aiohttp
-from random import randint
 import logging
+from random import randint
+
+import aiohttp
+import discord
+from discord import Embed, app_commands
+from discord.ext import commands
 
 
 class Xkcd(commands.Cog):

@@ -1,13 +1,13 @@
+import base64
+import io
+import logging
+import os
+
+import discord
+import requests
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
-import os
-import requests
-import base64
-import io
-import discord
-import logging
-
 
 load_dotenv()
 

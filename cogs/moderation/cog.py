@@ -1,17 +1,16 @@
-import discord
-from discord import app_commands
-from discord.ext import commands
-import logging
-from discord import Member
-from typing import Optional
-from . import time
-from . import _utils
-import dateutil.parser
-from datetime import datetime, UTC
-import random
-from discord.utils import escape_markdown
 import json
+import logging
+import random
+from datetime import UTC, datetime
+from typing import Optional
 
+import dateutil.parser
+import discord
+from discord import Member, app_commands
+from discord.ext import commands
+from discord.utils import escape_markdown
+
+from . import _utils, time
 
 SUPERSTARIFY_DEFAULT_DURATION = "1h"
 

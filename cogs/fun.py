@@ -1,14 +1,14 @@
-from discord import app_commands
-from discord.ext import commands
-from typing import Literal
-import pyjokes
+import logging
 import random
 from json import loads
 from pathlib import Path
+from typing import Literal
+
 import aiohttp
+import pyjokes
 from aiohttp import ClientError, ClientResponseError
-from discord import Embed
-import logging
+from discord import Embed, app_commands
+from discord.ext import commands
 
 ALL_VIDS = loads(Path("resources/fun/april_fools_vids.json").read_text("utf-8"))
 

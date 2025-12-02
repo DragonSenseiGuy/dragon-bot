@@ -1,7 +1,7 @@
-import discord
-from discord import app_commands, Embed
-from discord.ext import commands
 import arrow
+import discord
+from discord import Embed, app_commands
+from discord.ext import commands
 
 DESCRIPTIONS = ("Command processing time", "Discord API latency")
 

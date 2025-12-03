@@ -210,6 +210,36 @@ class Fun(commands.Cog):
 
         await self.bot.process_commands(message)
 
+    @app_commands.command(
+        name="rock-paper-scissors",
+        description="Play rock paper scissors with the bot.",
+    )
+    @app_commands.describe(choice="Rock, Paper or Scissors?")
+    async def rock_paper_scissors(
+            self,
+            ctx: commands.Context,
+            choice: Literal["Rock", "Paper", "Scissors"],
+    ) -> None:
+        """Play rock paper scissors with the bot."""
+        bot_choice = random.choice(["Rock", "Paper", "Scissors"])
+        if bot_choice == choice:
+            result = "tied"
+        elif bot_choice == "Rock" and choice == "Paper":
+            result = "won"
+        elif bot_choice == "Rock" and choice == "Scissors":
+            result = "lost"
+        elif bot_choice == "Paper" and choice == "Rock":
+            result = "lost"
+        elif bot_choice == "Paper" and choice == "Scissors":
+            result = "won"
+        elif bot_choice == "Scissors" and choice == "Rock":
+            result = "won"
+        elif bot_choice == "Scissors" and choice == "Paper":
+            result = "lost"
+        else:
+            logging.error(f"An unexpected error occured with rock, paper and scissors. User choice: {choice}. Bot choice: {bot_choice}")
+        await ctx.response.send_message(f"You chose {choice} and the bot chose {bot_choice}, you {result}")
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Fun(bot))

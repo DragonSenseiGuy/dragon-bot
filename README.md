@@ -31,6 +31,7 @@ To run Dragon Bot on your own machine for development purposes, follow these ste
     Create a file named `.env` in the root of the project and add your bot token:
     ```
     BOT_TOKEN=your_bot_token_here
+    AI_API_KEY=your-ai-api-key-here
     ```
 
 5.  **Run the bot**:

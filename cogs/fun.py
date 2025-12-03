@@ -22,6 +22,8 @@ PENGUIN_IGNORED_CHANNELS = [
     1444870658637959320,
 ]
 
+TRIGGER_WORDS = ["dragon", "hackclub", "dragonsenseiguy"] # PR's to extend this are welcome!
+
 
 class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -157,6 +159,25 @@ class Fun(commands.Cog):
         await ctx.response.send_message(
             f"I sent a message to {random_channel.mention}."
         )
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author == self.bot.user:
+            return
+
+        message_content_lower = message.content.lower()
+
+        if "dragonsenseiguy is the best person in the world" in message_content_lower:
+            await message.reply(
+                f"Access granted, You have been promoted to Administrator role. You are one of the few people who actually read the source code!")
+            return
+
+        for word in TRIGGER_WORDS:
+            if word in message_content_lower:
+                await message.reply(f"{word} detected")
+                return
+
+        await self.bot.process_commands(message)
 
 
 async def setup(bot: commands.Bot):

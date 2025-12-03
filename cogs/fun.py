@@ -7,6 +7,7 @@ from typing import Literal
 import aiohttp
 import pyjokes
 from aiohttp import ClientError, ClientResponseError
+import discord
 from discord import Embed, app_commands
 from discord.ext import commands
 
@@ -27,6 +28,26 @@ TRIGGER_WORDS = [
     "hackclub",
     "dragonsenseiguy",
 ]  # PR's to extend this are welcome!
+
+
+class PenguinView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=180) # 3 minute timeout
+
+    @discord.ui.button(label="I found the penguin!", style=discord.ButtonStyle.primary, emoji="🐧")
+    async def found_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Disable the button
+        button.disabled = True
+        button.label = "Found!"
+        
+        # Acknowledge the interaction and edit the original message with the modified view
+        await interaction.response.edit_message(view=self)
+
+        # Send a new message pinging the user
+        await interaction.followup.send(f"{interaction.user.mention} found the penguin!")
+
+        # Stop the view from listening for more interactions
+        self.stop()
 
 
 class Fun(commands.Cog):
@@ -157,8 +178,10 @@ class Fun(commands.Cog):
             )
 
         random_channel = random.choice(public_text_channels)
+        view = PenguinView()
         await random_channel.send(
-            f"Hello from a random channel! This is {random_channel.mention}"
+            "A wild penguin has appeared! 🐧",
+            view=view
         )
         await ctx.response.send_message(
             f"I sent a message to {random_channel.mention}."

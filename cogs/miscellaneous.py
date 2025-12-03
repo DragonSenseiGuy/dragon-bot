@@ -43,6 +43,34 @@ class Miscellaneous(commands.Cog):
 
         await interaction.response.send_message(embed=embed)
 
+    @app_commands.command(name="credits", description="Credits for the bot.")
+    async def credits(self, interaction: discord.Interaction) -> None:
+        """Credits for the bot."""
+        embed = Embed(title="Credits", color=discord.Color.blue())
+        embed.add_field(
+            name="Inspiration/Code Style",
+            value="[Python Discords bot](https://github.com/python-discord/bot)",
+            inline=False,
+        )
+        embed.add_field(
+            name="`penguin-hide-and-seek`",
+            value="Suggested by @Savannah on the Hack Club Slack",
+            inline=False,
+        )
+        embed.add_field(
+            name="`ask-ai-with-personality`",
+            value="Suggested by [@the space man](http://scrapbook.hackclub.com/Ashlesh) on the Hack Club Slack",
+            inline=False,
+        )
+        embed.add_field(
+            name="`superstarify`",
+            value="Suggested by @L3viathan in Python Discord",
+            inline=False,
+        )
+        embed.set_footer(text="Huge thanks to them all!")
+
+        await interaction.response.send_message(embed=embed)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Miscellaneous(bot))

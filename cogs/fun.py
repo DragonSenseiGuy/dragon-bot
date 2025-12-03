@@ -297,23 +297,62 @@ class Fun(commands.Cog):
 
             embed = Embed(
                 title="Random Dog Picture",
-                description=f"-# Powered by [dog.ceo](https://dog.ceo)", # Removed data["message"] from description
+                description=f"-# Powered by [dog.ceo](https://dog.ceo)",
                 colour=0x0279FD,
             )
-            embed.set_image(url=data["message"]) # Set the image in the embed
+            embed.set_image(url=data["message"])
             await ctx.response.send_message(embed=embed)
         except ClientResponseError as e:
-            logging.warning(f"dog.ceo API error: {e.status} {e.message}") # Corrected API name in warning
+            logging.warning(f"dog.ceo API error: {e.status} {e.message}")
             await ctx.response.send_message(
-                ":x: Could not retrieve dog picture from API." # Corrected message
+                ":x: Could not retrieve dog picture from API."
             )
         except (ClientError, TimeoutError) as e:
-            logging.error(f"Network error fetching dog picture: {e}") # Corrected message
+            logging.error(f"Network error fetching dog picture: {e}")
             await ctx.response.send_message(
-                ":x: Could not connect to the dog picture service." # Corrected message
+                ":x: Could not connect to the dog picture service."
             )
         except Exception:
-            logging.exception("Unexpected error fetching dog picture.") # Corrected message
+            logging.exception("Unexpected error fetching dog picture.")
+            await ctx.response.send_message(
+                ":x: Something unexpected happened. Try again later."
+            )
+
+    @app_commands.command(
+        name="cat-picture",
+        description="Retrieves a cat picture from thecatapi.com api.",
+    )
+    @app_commands.describe()
+    async def cat_picture(
+            self,
+            ctx: commands.Context,
+    ) -> None:
+        """Retrieves a cat picture from thecatapi.com api."""
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://api.thecatapi.com/v1/images/search") as resp:
+                    resp.raise_for_status()
+                    data = await resp.json()
+
+            embed = Embed(
+                title="Random Cat Picture",
+                description=f"-# Powered by [thecatapi.com](https://thecatapi.com)",
+                colour=0x0279FD,
+            )
+            embed.set_image(url=data[0]["url"])
+            await ctx.response.send_message(embed=embed)
+        except ClientResponseError as e:
+            logging.warning(f"thecatapi.com API error: {e.status} {e.message}")
+            await ctx.response.send_message(
+                ":x: Could not retrieve cat picture from API."
+            )
+        except (ClientError, TimeoutError) as e:
+            logging.error(f"Network error fetching cat picture: {e}")
+            await ctx.response.send_message(
+                ":x: Could not connect to the cat picture service."
+            )
+        except Exception:
+            logging.exception("Unexpected error fetching cat picture.")
             await ctx.response.send_message(
                 ":x: Something unexpected happened. Try again later."
             )

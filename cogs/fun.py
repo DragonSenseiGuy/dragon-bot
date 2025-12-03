@@ -274,7 +274,46 @@ class Fun(commands.Cog):
                 ":x: Could not connect to the dad joke service."
             )
         except Exception:
-            logging.exception("Unexpected error fetching quote.")
+            logging.exception("Unexpected error fetching dad joke.")
+            await ctx.response.send_message(
+                ":x: Something unexpected happened. Try again later."
+            )
+
+    @app_commands.command(
+        name="dog-picture",
+        description="Retrieves a dog picture from dog.ceo api.",
+    )
+    @app_commands.describe()
+    async def dog_picture(
+            self,
+            ctx: commands.Context,
+    ) -> None:
+        """Retrieves a dog picture from dog.ceo api."""
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://dog.ceo/api/breeds/image/random") as resp:
+                    resp.raise_for_status()
+                    data = await resp.json()
+
+            embed = Embed(
+                title="Random Dog Picture",
+                description=f"-# Powered by [dog.ceo](https://dog.ceo)", # Removed data["message"] from description
+                colour=0x0279FD,
+            )
+            embed.set_image(url=data["message"]) # Set the image in the embed
+            await ctx.response.send_message(embed=embed)
+        except ClientResponseError as e:
+            logging.warning(f"dog.ceo API error: {e.status} {e.message}") # Corrected API name in warning
+            await ctx.response.send_message(
+                ":x: Could not retrieve dog picture from API." # Corrected message
+            )
+        except (ClientError, TimeoutError) as e:
+            logging.error(f"Network error fetching dog picture: {e}") # Corrected message
+            await ctx.response.send_message(
+                ":x: Could not connect to the dog picture service." # Corrected message
+            )
+        except Exception:
+            logging.exception("Unexpected error fetching dog picture.") # Corrected message
             await ctx.response.send_message(
                 ":x: Something unexpected happened. Try again later."
             )

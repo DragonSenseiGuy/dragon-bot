@@ -22,7 +22,11 @@ PENGUIN_IGNORED_CHANNELS = [
     1444870658637959320,
 ]
 
-TRIGGER_WORDS = ["dragon", "hackclub", "dragonsenseiguy"] # PR's to extend this are welcome!
+TRIGGER_WORDS = [
+    "dragon",
+    "hackclub",
+    "dragonsenseiguy",
+]  # PR's to extend this are welcome!
 
 
 class Fun(commands.Cog):
@@ -169,7 +173,8 @@ class Fun(commands.Cog):
 
         if "dragonsenseiguy is the best person in the world" in message_content_lower:
             await message.reply(
-                f"Access granted, You have been promoted to Administrator role. You are one of the few people who actually read the source code!")
+                "Access granted, You have been promoted to Administrator role. You are one of the few people who actually read the source code!"
+            )
             return
 
         for word in TRIGGER_WORDS:

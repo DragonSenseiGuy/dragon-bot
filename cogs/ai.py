@@ -12,7 +12,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PERSONALITY = ["discord zoomer", "potter head", "roasting mode", "'You are absolutely right' mode"]
+PERSONALITY = [
+    "discord zoomer",
+    "potter head",
+    "roasting mode",
+    "'You are absolutely right' mode",
+]
 AI_API_KEY = os.getenv("AI_API_KEY")
 URL = "https://ai.hackclub.com/proxy/v1/chat/completions"
 
@@ -157,7 +162,10 @@ class AI(commands.Cog):
             )
             await ctx.followup.send("An unexpected error occurred while asking the AI.")
 
-    @app_commands.command(name="ask-ai-with-personality", description="Ask AI a question with a random personality.")
+    @app_commands.command(
+        name="ask-ai-with-personality",
+        description="Ask AI a question with a random personality.",
+    )
     @app_commands.describe(prompt="The prompt.")
     async def ask_ai_with_personality(self, ctx: commands.Context, prompt: str) -> None:
         """Ask AI a question with a random personality."""
@@ -170,7 +178,13 @@ class AI(commands.Cog):
 
         payload = {
             "model": "google/gemini-2.5-flash",
-            "messages": [{"role": "system", "content": f"Act like a {random.choice(PERSONALITY)}"}, {"role": "user", "content": prompt}],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": f"Act like a {random.choice(PERSONALITY)}",
+                },
+                {"role": "user", "content": prompt},
+            ],
             "stream": False,
         }
 

@@ -27,6 +27,17 @@ class AI(commands.Cog):
         self.bot = bot
         self.logger = logging.getLogger(__name__)
 
+    async def cog_check(self, ctx: commands.Context) -> bool:
+        if not AI_API_KEY:
+            message = ":x: The AI API key is not configured. Please set the `AI_API_KEY` in the `.env` file."
+            # For app commands, we can send an ephemeral response
+            if ctx.interaction:
+                await ctx.interaction.response.send_message(message, ephemeral=True)
+            else: # Fallback for regular commands
+                await ctx.send(message)
+            return False
+        return True
+
     @app_commands.command(
         name="generate-image", description="Generates an image using Nano Banana 3 Pro."
     )

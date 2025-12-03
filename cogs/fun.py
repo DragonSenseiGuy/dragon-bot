@@ -240,6 +240,45 @@ class Fun(commands.Cog):
             logging.error(f"An unexpected error occured with rock, paper and scissors. User choice: {choice}. Bot choice: {bot_choice}")
         await ctx.response.send_message(f"You chose {choice} and the bot chose {bot_choice}, you {result}")
 
+    @app_commands.command(
+        name="dadjoke",
+        description="Retrieves a random dad joke from icanhazdadjoke.com api.",
+    )
+    @app_commands.describe()
+    async def dad_joke(
+            self,
+            ctx: commands.Context,
+    ) -> None:
+        """Retrieves a random dad joke from icanhazdadjoke.com api."""
+        try:
+            async with aiohttp.ClientSession() as session:
+                headers = {"Accept": "application/json"}
+                async with session.get("https://icanhazdadjoke.com", headers=headers) as resp:
+                    resp.raise_for_status()
+                    data = await resp.json()
+
+            embed = Embed(
+                title="Random Dad Joke",
+                description=f"{data["joke"]}\n\n-# [Permalink](https://icanhazdadjoke.com/j/{data['id']})\n-# Powered by [icanhazdadjoke.com](https://icanhazdadjoke.com/api)",
+                colour=0x0279FD,
+            )
+            await ctx.response.send_message(embed=embed)
+        except ClientResponseError as e:
+            logging.warning(f"icanhazdadjoke API error: {e.status} {e.message}")
+            await ctx.response.send_message(
+                ":x: Could not retrieve dad joke from API."
+            )
+        except (ClientError, TimeoutError) as e:
+            logging.error(f"Network error fetching quote: {e}")
+            await ctx.response.send_message(
+                ":x: Could not connect to the dad joke service."
+            )
+        except Exception:
+            logging.exception("Unexpected error fetching quote.")
+            await ctx.response.send_message(
+                ":x: Something unexpected happened. Try again later."
+            )
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Fun(bot))

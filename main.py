@@ -31,31 +31,21 @@ async def on_ready():
         print("Slash commands synced!")
     except Exception as e:
         logging.error(f"Failed to sync slash commands: {e}")
+    
+    bot.remove_command('help')
 
 
 async def load_cogs():
     for root, dirs, files in os.walk("./cogs"):
         for filename in files:
-            if filename.endswith(".py") and not filename.startswith("__"):
-                # Construct the extension name from the file path
-                # e.g., cogs/moderation/cog.py -> cogs.moderation.cog
+            if filename.endswith(".py") and filename not in ["time.py", "constants.py"] and not filename.startswith("__") and not filename.startswith("_"): # Exclude __init__.py, _utils.py, time.py, and constants.py
                 path = os.path.join(root, filename)
-                # remove ./ and .py, and replace / with .
                 ext_name = path[2:-3].replace(os.path.sep, ".")
-                if "moderation.cog" in ext_name:
-                    try:
-                        await bot.load_extension(ext_name)
-                        logging.info(f"Loaded extension: {ext_name}")
-                    except Exception as e:
-                        logging.error(f"Failed to load cog {ext_name}: {e}")
-                elif "moderation" in ext_name:
-                    pass
-                else:
-                    try:
-                        await bot.load_extension(ext_name)
-                        logging.info(f"Loaded extension: {ext_name}")
-                    except Exception as e:
-                        logging.error(f"Failed to load cog {ext_name}: {e}")
+                try:
+                    await bot.load_extension(ext_name)
+                    logging.info(f"Loaded extension: {ext_name}")
+                except Exception as e:
+                    logging.error(f"Failed to load cog {ext_name}: {e}")
 
 
 async def main():

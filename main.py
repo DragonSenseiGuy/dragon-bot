@@ -23,6 +23,22 @@ intents.guilds = True  # Required for accessing guild information
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+    if isinstance(error, discord.app_commands.CheckFailure):
+        # The check failed, so we can send the error message.
+        await interaction.response.send_message(str(error), ephemeral=True)
+    else:
+        # Handle other errors if needed, or re-raise
+        logging.error(f"Unhandled app command error: {error}", exc_info=True)
+        # Try to send a response if one hasn't been sent already.
+        if not interaction.response.is_done():
+            await interaction.response.send_message(":x: An unexpected error occurred.", ephemeral=True)
+        else:
+            await interaction.followup.send(":x: An unexpected error occurred.", ephemeral=True)
+
+
+
 @bot.event
 async def on_ready():
     print(f"Bot connected as {bot.user}")

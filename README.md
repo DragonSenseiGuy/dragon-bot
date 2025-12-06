@@ -2,6 +2,9 @@
 
 Dragon Bot is a Discord bot designed to help manage my server and provide some fun and useful commands. It's built with Python using the `discord.py` library and is constantly evolving with new features.
 
+# Discord Server
+You can try the bot out in [this server](https://discord.gg/s4jAxZrfXF)
+
 ## How to Use
 
 All commands are available as slash commands. Simply type `/` in your Discord server to see a list of available commands and their descriptions.
@@ -31,7 +34,7 @@ To run Dragon Bot on your own machine for development purposes, follow these ste
     Create a file named `.env` in the root of the project and add your bot token:
     ```
     BOT_TOKEN=your_bot_token_here
-    AI_API_KEY=your-ai-api-key-here
+    AI_API_KEY=your-ai-api-key-here(open router)
     ```
 
 5.  **Run the bot**:

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start the bot in the background
-nohup python3 main.py > bot.log 2> bot.err &
+nohup uv run main.py > bot.log 2> bot.err &
 
 # Get the process ID of the last background command
 PID=$!
